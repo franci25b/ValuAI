@@ -1,0 +1,30 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.so
+
+# Virtual environment
+.venv/
+env/
+venv/
+
+# IDE / VS Code
+.vscode/
+.idea/
+
+# macOS junk
+.DS_Store
+
+# Logs and temp
+*.log
+*.tmp
+*.swp
+
+# Data & plots
+*.csv
+*.png
+
+# API keys or env files
+.env
