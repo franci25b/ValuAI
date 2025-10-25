@@ -30,7 +30,7 @@ def _validate_tickers(cands: List[str], n: int) -> List[str]:
             break
     return valid
 
-def suggest_comp_tickers(company_or_ticker: str, n: int = 8) -> List[str]:
+def suggest_comp_tickers(company_or_ticker: str, n: int = 15) -> List[str]:
     prompt = textwrap.dedent(f"""
     You are an equity analyst. Return ONLY a JSON array of {n} liquid, listed
     peer tickers that are the closest business comparables for: "{company_or_ticker}".
@@ -41,7 +41,7 @@ def suggest_comp_tickers(company_or_ticker: str, n: int = 8) -> List[str]:
         raw_list = ask_json(prompt, schema=TickerListSchema)  # Call Gemini with a strict schema.
         validated = _validate_tickers(raw_list, n)            # Filter to real, tradeable, deduped tickers.
         # Require at least a “handful” so the percentiles you compute later have some meaning.
-        if len(validated) >= max(4, n // 2):
+        if len(validated) >= max(5, n // 2):
             return validated                                  # Success path: usable set of comps.
     except Exception as e:
         # Model overload, network flake, schema mismatch, etc. -> don’t crash the pipeline.

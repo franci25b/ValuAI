@@ -38,3 +38,23 @@ def implied_price_from_multiple(
         price = eq / shares
         out[label] = float(price)
     return out
+
+def implied_ev_from_multiple(
+    target_row: pd.Series, multiple_name: str, driver_name: str
+) -> Dict[str, float]:
+    """
+    Given a peer multiple (e.g., EV/EBITDA) and the target driver (e.g., EBITDA),
+    return implied Enterprise Value (low/base/high) using p25/p50/p75 multiples.
+    """
+    driver = target_row[driver_name]
+    if pd.isna(driver):
+        return {"low": np.nan, "base": np.nan, "high": np.nan}
+
+    p25 = target_row.get(f"{multiple_name}_p25")
+    p50 = target_row.get(f"{multiple_name}_p50")
+    p75 = target_row.get(f"{multiple_name}_p75")
+
+    out = {}
+    for label, mult in [("low", p25), ("base", p50), ("high", p75)]:
+        out[label] = float(mult * driver)/1e9 if pd.notna(mult) else np.nan
+    return out
