@@ -6,9 +6,6 @@ from comps_select import suggest_comp_tickers
 from data_fetch import get_snapshots
 from valuation import pctiles, implied_ev_from_multiple
 from visualize import plot_football_field_ev
-#from valuation import  implied_price_from_multiple
-#from visualize import plot_football_field
-#import yfinance as yf
 
 def clean_peers(peers: pd.DataFrame) -> pd.DataFrame:
     """Basic hygiene: require positive drivers, drop NaNs/infs, winsorize 5–95%."""
@@ -82,40 +79,18 @@ def main():
 
     target_row = df[df["ticker"] == target_row["ticker"]].iloc[0]
 
-    # implied price ranges
-    # implied = {
-    #     "EV/Revenue": implied_price_from_multiple(target_row, "ev_rev", "revenue_ttm"),
-    #     "EV/EBITDA":  implied_price_from_multiple(target_row, "ev_ebitda", "ebitda_ttm"),
-    # }
-    # print("Implied price ranges (USD unless data says otherwise):")
-    # print(pd.DataFrame(implied))
-
-    # spot = target_row.get("price")
-    # if pd.notna(spot):
-    #     print(f"\nSpot price: {target_row['ticker']} = {spot:.2f}")
-
     implied_ev = {
         "EV/Revenue": implied_ev_from_multiple(target_row, "ev_rev", "revenue_ttm"),
         "EV/EBITDA":  implied_ev_from_multiple(target_row, "ev_ebitda", "ebitda_ttm"),
     }
 
     spot_ev = target_row.get("enterprise_value")
-    # if pd.isna(spot_ev):
-    #     mcap = target_row.get("market_cap") or 0.0
-    #     debt = target_row.get("debt") or 0.0
-    #     cash = target_row.get("cash") or 0.0
-    #     spot_ev = mcap + debt - cash
 
     print("\nImplied enterprise value ranges (same currency as data, values expressed in Billions):")
-    print(pd.DataFrame(implied_ev))
+    df_print = pd.DataFrame.from_dict(implied_ev, orient="index") / 1e9
+    print(df_print.round(3))
     if pd.notna(spot_ev):
         print(f"Spot EV: {spot_ev/1e9:.1f} B")
-
-    # plot football field
-    # spot = target_row.get("price")
-    # outpng = f"football_field_{target_row['ticker']}.png"
-    # plot_football_field(implied, title=f"{target_row['ticker']} – Football Field", outpath=outpng, spot_price=spot if pd.notna(spot) else None)
-    # print(f"Saved chart -> {outpng}")
 
     outpng = f"football_field_ev_{target_row['ticker']}.png"
     plot_football_field_ev(

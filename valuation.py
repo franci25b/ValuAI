@@ -56,5 +56,5 @@ def implied_ev_from_multiple(
 
     out = {}
     for label, mult in [("low", p25), ("base", p50), ("high", p75)]:
-        out[label] = float(mult * driver)/1e9 if pd.notna(mult) else np.nan
-    return out
+        out[label] = float(mult * driver) if pd.notna(mult) else np.nan   
+    return out  

@@ -5,16 +5,19 @@ import math
 
 def _scale_to_billions(values):
     # returns (scaled_values, scale_label)
-    maxv = max([v for d in values for v in d.values() if isinstance(v, (int, float)) and not math.isnan(v)] + [1.0])
-    if maxv > 1e10:
-        scale = 1e9
-        label = "Enterprise Value (billions)"
-    elif maxv > 1e7:
-        scale = 1e6
-        label = "Enterprise Value (millions)"
-    else:
-        scale = 1
-        label = "Enterprise Value"
+    label = "Enterprise Value (billions)"
+    scale = 1e9
+    # # determine scale based on max value
+    # maxv = max([v for d in values for v in d.values() if isinstance(v, (int, float)) and not math.isnan(v)] + [1.0])
+    # if maxv > 1e10:
+    #     scale = 1e9
+    #     label = "Enterprise Value (billions)"
+    # elif maxv > 1e7:
+    #     scale = 1e6
+    #     label = "Enterprise Value (millions)"
+    # else:
+    #     scale = 1
+    #     label = "Enterprise Value"
     scaled = [
         {k: (v / scale if isinstance(v, (int, float)) else v) for k, v in d.items()}
         for d in values
