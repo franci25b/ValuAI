@@ -51,12 +51,20 @@ def infer_inputs_from_row(row: pd.Series) -> DCFInputs:
     else:
         ebit_margin = 0.15
 
-    # Operating NWC% from level if available
+    # Operating NWC% from level if available (allow negatives; common in retail)
     nwc_pct = 0.10
     op_nwc = row.get("op_nwc")
     if pd.notna(op_nwc) and pd.notna(rev) and rev > 0:
-        nwc_pct = max(0.0, min(0.50, float(op_nwc) / rev))
+        try:
+            nwc_pct = float(op_nwc) / float(rev)
+        except Exception:
+            nwc_pct = np.nan
 
+    # Only fall back if invalid; otherwise bound to a sane range that allows negatives
+    if not pd.notna(nwc_pct) or not np.isfinite(nwc_pct):
+        nwc_pct = 0.10
+    else:
+        nwc_pct = float(np.clip(nwc_pct, -0.30, 0.50))
     return DCFInputs(
         revenue_ttm=rev,
         ebit_margin=ebit_margin,
@@ -103,7 +111,7 @@ def dcf_ev(inputs: DCFInputs) -> Dict[str, float]:
         ebit_T1 = rev_T1 * inputs.ebit_margin
         nopat_T1 = ebit_T1 * (1.0 - inputs.tax_rate)
         d_and_a_T1 = inputs.d_and_a_pct * rev_T1
-        capex_T1 = inputs.capex_pct * rev_T1
+        capex_T1 = inputs.d_and_a_pct * rev_T1  # maintenance capex at terminal
         nwc_T1 = inputs.nwc_pct * rev_T1
         delta_nwc_T1 = nwc_T1 - nwc
 
