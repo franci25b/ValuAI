@@ -6,6 +6,7 @@ from comps_select import suggest_comp_tickers
 from data_fetch import get_snapshots
 from valuation import pctiles, implied_ev_from_multiple
 from visualize import plot_football_field_ev
+from dcf import infer_inputs_from_row, dcf_ev
 
 def clean_peers(peers: pd.DataFrame) -> pd.DataFrame:
     """Basic hygiene: require positive drivers, drop NaNs/infs, winsorize 5–95%."""
@@ -79,10 +80,27 @@ def main():
 
     target_row = df[df["ticker"] == target_row["ticker"]].iloc[0]
 
+    # ---- DCF module ----
+    dcf_inputs = infer_inputs_from_row(target_row)
+    dcf_ranges = dcf_ev(dcf_inputs)
+
+    for k, v in dcf_ranges.items():
+        print(f"DCF {k} EV: {v/1e9:.1f} B")
+
     implied_ev = {
         "EV/Revenue": implied_ev_from_multiple(target_row, "ev_rev", "revenue_ttm"),
         "EV/EBITDA":  implied_ev_from_multiple(target_row, "ev_ebitda", "ebitda_ttm"),
+        "DCF (FCFF)": dcf_ranges,
     }
+
+    print("\nDCF inputs (key):")
+    print(
+        f"Rev_TTM={dcf_inputs.revenue_ttm/1e9:.0f} B, EBIT%={dcf_inputs.ebit_margin:.2%}, "
+        f"Tax={dcf_inputs.tax_rate:.0%}, WACC={dcf_inputs.wacc:.0%}, Years={dcf_inputs.years}\n"
+        f"D&A%={dcf_inputs.d_and_a_pct:.0%}, CAPEX%={dcf_inputs.capex_pct:.0%}, NWC%={dcf_inputs.nwc_pct:.0%}\n"
+        f"Growth low/base/high={dcf_inputs.growth_low:.0%}/{dcf_inputs.growth_base:.0%}/{dcf_inputs.growth_high:.0%}, "
+        f"g low/base/high={dcf_inputs.g_low:.0%}/{dcf_inputs.g_base:.0%}/{dcf_inputs.g_high:.0%}"
+    )
 
     spot_ev = target_row.get("enterprise_value")
 
