@@ -7,7 +7,7 @@ git clone https://github.com/yourusername/ValuAI.git
 cd ValuAI
 python3 -m venv .venv && source .venv/bin/activate
 pip install -r requirements.txt
-python run_mvp.py AAPL
+python run_mvp.py JNJ
 ```
 
 ## Overview
@@ -54,7 +54,7 @@ The objective is to merge rigorous quantitative modeling with AI-driven contextu
 source .venv/bin/activate
 
 # Run a valuation for a company
-python run_mvp.py AAPL
+python run_mvp.py JNJ
 
 # Output includes:
 # - Peer multiples and implied valuations
